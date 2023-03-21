@@ -6,7 +6,7 @@ Flutter project.
 
 This project is a starting point for a Flutter application.
 
-note app 
+note app using bloc state management with sqllite database 
 
 ![homepagedark](https://user-images.githubusercontent.com/87063387/226693495-d87531a7-dca8-4a1d-972c-4628b9de431c.JPG)
 
