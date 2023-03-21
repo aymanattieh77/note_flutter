@@ -8,16 +8,21 @@ class EmptyNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        children: [
-          Image.asset('assets/images/add_notes.png'),
-          Text(
-            'No Notes Add yet',
-            style: textLobsterStyle.copyWith(
-              color: Theme.of(context).primaryColor,
+      child: Center(
+        child: Column(
+          children: [
+            Image.asset(
+              'assets/images/add_notes.png',
+              height: 200,
             ),
-          )
-        ],
+            Text(
+              'No Notes Add yet',
+              style: textLobsterStyle.copyWith(
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
