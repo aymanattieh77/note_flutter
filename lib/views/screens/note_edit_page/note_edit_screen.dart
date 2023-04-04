@@ -95,8 +95,8 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
       child: ElevatedButton(
         onPressed: widget.note == null ? createNote : updateNote,
         style: ElevatedButton.styleFrom(
-          primary: Theme.of(context).primaryColor,
-          onPrimary: Theme.of(context).canvasColor,
+          foregroundColor: Theme.of(context).canvasColor,
+          backgroundColor: Theme.of(context).primaryColor,
         ),
         child: const Text('Save Note'),
       ),

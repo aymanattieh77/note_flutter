@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:page_transition/page_transition.dart';
 
 import 'package:todo/controller/notes/cubit/note_cubit.dart';
+import 'package:todo/controller/notes/filter_note_cubit/filter_cubit.dart';
 import 'package:todo/views/components/note_alert.dart';
 
 import 'package:todo/views/screens/homepage/widgets/empty_note.dart';
@@ -17,7 +18,6 @@ import '../../../data/models/note.dart';
 import '../../components/note_card.dart';
 import '../../constants/constants.dart';
 
-import 'widgets/filter_chip.dart';
 import 'widgets/note_float_action_btn.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -28,11 +28,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  //all   //important // to do
-  List<bool> isSelected = [true, false, false];
   List<Note> notes = [];
   List<Note> importantNotes = [];
   List<Note> todoNotes = [];
+
   @override
   void initState() {
     super.initState();
@@ -41,28 +40,49 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _titleNote(context),
-              const SizedBox(height: 10),
-              _rowNotes(),
-              blocNote(),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0.0,
+          toolbarHeight: 150,
+          title: _titleNote(context),
+          bottom: TabBar(
+            labelColor: Theme.of(context).primaryColor,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Theme.of(context).primaryColor,
+            indicatorSize: TabBarIndicatorSize.label,
+            onTap: BlocProvider.of<FilterNotesCubit>(context).onTabChange,
+            tabs: const [
+              Tab(text: 'All'),
+              Tab(text: 'Important'),
+              Tab(text: 'Todo'),
             ],
           ),
         ),
+        body: BlocBuilder<FilterNotesCubit, int>(
+          builder: (context, state) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: blocNote(),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        floatingActionButton: NoteFloatActionButton(press: goToEditScreen),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
-      floatingActionButton: NoteFloatActionButton(press: goToEditScreen),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
   Widget blocNote() {
+    final val = BlocProvider.of<FilterNotesCubit>(context).state;
     return BlocBuilder<NoteCubit, NoteState>(
       builder: (context, state) {
         if (state is NoteLoaded) {
@@ -70,7 +90,12 @@ class _HomeScreenState extends State<HomeScreen> {
           importantNotes =
               notes.where((note) => note.isImportant == 1).toList();
           todoNotes = notes.where((note) => note.isTodo == 1).toList();
-          return notes.isNotEmpty ? noteList(filterNotes()) : const EmptyNote();
+          final filterNotes = val == 0
+              ? notes
+              : val == 1
+                  ? importantNotes
+                  : todoNotes;
+          return notes.isNotEmpty ? noteList(filterNotes) : const EmptyNote();
         } else if (state is NoteFailure) {
           return NoteAlert(error: state.error);
         } else {
@@ -82,39 +107,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void goToEditScreen() {
     Navigator.push(
-        context,
-        PageTransition(
-          child: const NoteEditScreen(),
-          type: PageTransitionType.bottomToTop,
-        ));
-  }
-
-  List<Note> filterNotes() {
-    if (isSelected[0] == true) {
-      return notes;
-    } else if (isSelected[1] == true) {
-      return importantNotes;
-    } else {
-      return todoNotes;
-    }
+      context,
+      PageTransition(
+        child: const NoteEditScreen(),
+        type: PageTransitionType.bottomToTop,
+      ),
+    );
   }
 
   Widget noteList(List<Note> notes) {
-    return Expanded(
-      child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        itemCount: notes.length,
-        itemBuilder: (context, index) {
-          final note = notes[index];
-          return NoteCard(
-            note: note,
-            color: getColor(note),
-          );
-        },
-        separatorBuilder: (context, index) {
-          return const SizedBox(height: 10);
-        },
-      ),
+    return ListView.separated(
+      physics: const BouncingScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: notes.length,
+      itemBuilder: (context, index) {
+        final note = notes[index];
+        return NoteCard(
+          note: note,
+          color: getColor(note),
+        );
+      },
+      separatorBuilder: (context, index) {
+        return const SizedBox(height: 10);
+      },
     );
   }
 
@@ -128,31 +143,6 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       return cardNoteColor;
     }
-  }
-
-  Widget _rowNotes() {
-    return Row(
-      children: [
-        _chip('All', 0),
-        _chip('Important', 1),
-        _chip('To Do', 2),
-      ],
-    );
-  }
-
-  Widget _chip(String label, int index) {
-    return NoteChip(
-      index: index,
-      isSelect: isSelected,
-      label: label,
-      press: () {
-        setState(() {
-          for (var i = 0; i < isSelected.length; i++) {
-            isSelected[i] = i == index;
-          }
-        });
-      },
-    );
   }
 
   Widget _titleNote(BuildContext context) {

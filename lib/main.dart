@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:todo/controller/notes/cubit/note_cubit.dart';
+import 'package:todo/controller/notes/filter_note_cubit/filter_cubit.dart';
 import 'package:todo/controller/simple_bloc_observer.dart';
 import 'package:todo/controller/theme/theme_cache.dart';
 import 'package:todo/data/database/note_database.dart';
@@ -21,6 +22,9 @@ void main() async {
     providers: [
       BlocProvider(
         create: (ctx) => NoteCubit(),
+      ),
+      BlocProvider(
+        create: (ctx) => FilterNotesCubit(0),
       ),
       BlocProvider(
         create: (ctx) => ThemeCubit(isDark ? ThemeMode.dark : ThemeMode.light),
